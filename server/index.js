@@ -4,6 +4,8 @@ const path = require('path');
 const cors = require('cors');
 require('dotenv').config();
 
+const db = require('./db/database');
+
 const app = express();
 
 // ----- Middleware ----- //
@@ -19,6 +21,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(3001, () => {
+  db.connect();
   console.log('Server started on port 3001');
 });
 
