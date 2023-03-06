@@ -1,10 +1,10 @@
-const axios = require('axios');
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
 require('dotenv').config();
 
 const db = require('./db/database');
+const router = require('./routes');
 
 const app = express();
 
@@ -15,13 +15,10 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.urlencoded({ extended: true }));
 
 // ----- Request handling ----- //
-app.get('/', (req, res) => {
-  console.log('GET REQUEST');
-  res.send('received');
-});
+app.use(router);
 
 db.connect()
-  .then((res) => {
+  .then(() => {
     console.log('Connected to db');
     app.listen(3001, () => {
       console.log('Server started on port 3001');
