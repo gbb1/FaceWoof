@@ -22,6 +22,7 @@ function testQuery() {
 function generateDiscoverFeed(user1, zipcodes, count) {
   db.connect();
   db.query(`
+
   SELECT * FROM
   (
     SELECT * FROM users
@@ -37,7 +38,6 @@ function generateDiscoverFeed(user1, zipcodes, count) {
           WHERE friends."user1ID" = ${user1}
         )
     ) users
-  LEFT JOIN
       (
       SELECT * FROM public."pendingRelationships"
       WHERE "user2Id" = ${user1}
