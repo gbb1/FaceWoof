@@ -20,9 +20,15 @@ app.get('/', (req, res) => {
   res.send('received');
 });
 
-app.listen(3001, () => {
-  db.connect();
-  console.log('Server started on port 3001');
-});
+db.connect()
+  .then((res) => {
+    console.log('Connected to db');
+    app.listen(3001, () => {
+      console.log('Server started on port 3001');
+    });
+  })
+  .catch((err) => {
+    console.log('Error connecting to db');
+  });
 
 module.exports = app;
