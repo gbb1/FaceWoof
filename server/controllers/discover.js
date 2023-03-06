@@ -6,45 +6,62 @@ const db = require('../db/database');
 
 /* GET X POTENTIAL MATCHES AND SERVE UP A SORTED LIST */
 /* OUT: array of users within set mile radius, ideally, first to appear are users who have already said yes to primary user */
-function generateDiscoverFeed(user1, zipcodes, count) {
+function testQuery() {
+  console.log('here');
   db.query(`
-    SELECT *, relationships.user1Choice FROM users
-    LEFT JOIN
-      (
-        SELECT * FROM pendingRelationships
-        WHERE user2id = ${user1}
-          AND user1Choice = true
-      ) relationships
-    ON users.userId = b.user1id
-    WHERE location IN (${zipcodes})
-      AND userId NOT IN
-      (
-        SELECT user1id FROM pendingRelationships
-        WHERE user2id = ${user1}
-          AND user1Choice = false
-      )
-      AND userId NOT IN
-      (
-        SELECT user2id FROM pendingRelationships
-        WHERE user1id = ${user1}
-          AND user1Choice = false
-      )
-      AND userId NOT IN
-      (
-        SELECT user1ID FROM friends
-        WHERE user2ID = ${user1}
-      )
-      AND userId NOT IN
-      (
-        SELECT user2ID FROM friends
-        WHERE user1ID = ${user1}
-      )
-    ORDER BY relationships.user1Choice
-    LIMIT ${count};
+    SELECT * FROM users;
   `)
   .then((results) => {
-    console.log('Discover feed results', results);
-    return results;
+    console.log(results);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+}
+
+function generateDiscoverFeed(user1, zipcodes, count) {
+  db.connect();
+  db.query(`
+  SELECT * FROM
+  (
+    SELECT * FROM users
+      WHERE users.location IN ${zipcodes}
+        AND "userId" NOT IN
+        (
+          SELECT friends."user1ID" FROM friends
+          WHERE friends."user2ID" = ${user1}
+        )
+        AND "userId" NOT IN
+        (
+          SELECT friends."user2ID" FROM friends
+          WHERE friends."user1ID" = ${user1}
+        )
+    ) users
+  LEFT JOIN
+      (
+      SELECT * FROM public."pendingRelationships"
+      WHERE "user2Id" = ${user1}
+        AND "user1Choice" = true
+      ) AS relationships
+      ON users."userId" = relationships."user1Id"
+  WHERE "userId" NOT IN
+    (
+      SELECT a."user1Id" FROM public."pendingRelationships" a
+      WHERE a."user2Id" = ${user1}
+        AND "user1Choice" = false
+    )
+    AND "userId" NOT IN
+    (
+      SELECT a."user2Id" FROM public."pendingRelationships" a
+      WHERE a."user1Id" = ${user1}
+        AND "user1Choice" = false
+    )
+  ORDER BY relationships."user1Choice"
+  LIMIT ${count};
+  `)
+  .then((results) => {
+    console.log('Discover feed results', results.rows, results.rows.length);
+    return results.rows;
   })
   .catch((err) => {
     console.log('Error querying for discover feed', err);
@@ -98,3 +115,6 @@ module.exports = {
   checkForMatchAndCreate,
   generateDiscoverFeed,
 };
+
+generateDiscoverFeed(7, "('10036', '10017', '10029')", 100);
+// testQuery();
