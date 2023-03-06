@@ -1,8 +1,8 @@
 const express = require('express');
-const { getMatches } = require('./controllers/discover');
+const { discoverUsers } = require('./controllers');
 
 const router = express.Router();
 
-router.get('/api/discover', getMatches);
+router.get('/api/discover', discoverUsers);
 
 module.exports = router;

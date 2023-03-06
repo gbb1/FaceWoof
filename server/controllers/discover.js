@@ -7,7 +7,7 @@ const {
 const apiKey = process.env.ZIPCODE_APIKEY;
 const url = process.env.ZIPCODE_URI;
 
-const getMatches = async (req, res) => {
+const discoverUsers = async (req, res) => {
   try {
     const {
       id, zipcode, radius, count,
@@ -30,5 +30,5 @@ const getMatches = async (req, res) => {
 };
 
 module.exports = {
-  getMatches,
+  discoverUsers,
 };
