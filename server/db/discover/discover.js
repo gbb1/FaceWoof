@@ -1,6 +1,7 @@
 /* eslint-disable indent */
 /* eslint-disable max-len */
-const db = require('../db/database');
+const db = require('../database');
+const server = require('../../index');
 
 // QUERIES
 
@@ -20,8 +21,8 @@ function testQuery() {
 }
 
 function generateDiscoverFeed(user1, zipcodes, count) {
-  db.connect();
-  db.query(`
+  // db.connect();
+  return db.query(`
   SELECT * FROM
   (
     SELECT * FROM users
@@ -70,9 +71,12 @@ function generateDiscoverFeed(user1, zipcodes, count) {
 
 /* SET A USER'S RESPONSE TO A DIFFERENT USER TO THEIR CHOICE */
 function setRelationship(user1, user2, choice) {
+  let date = new Date();
+  date = Math.floor(date.getTime() / 1000);
+
   db.query(`
-    INSERT INTO pendingRelationships (user1id, user1Choice, user2id)
-    VALUES (${user1}, ${choice}, ${user2});
+    INSERT INTO public."pendingRelationships" ("user1Id", "user1Choice", "user2Id", "date")
+    VALUES (${user1}, ${choice}, ${user2}, to_timestamp(${date}));
   `)
     .then((result) => {
       console.log('🚀 setRelationships query result:', result);
@@ -85,23 +89,30 @@ function setRelationship(user1, user2, choice) {
 
 /* DETECT IF MATCH, IF SO, CREATE FRIENDSHIP BETWEEN USER 1 AND USER 2 */
 function checkForMatchAndCreate(user1, user2) {
-  db.query(`
-    IF (SELECT user1Choice FROM pendingRelationships WHERE user1id = ${user1} AND user2id = ${user2}) = true
-      AND (SELECT user1Choice FROM pendingRelationships WHERE user1id = ${user2} AND user2id = ${user1}) = true
+  let date = new Date();
+  date = Math.floor(date.getTime() / 1000);
+
+  return db.query(`
+    do $$
+    BEGIN
+    IF (SELECT "user1Choice" FROM public."pendingRelationships" WHERE "user1Id" = ${user1} AND "user2Id" = ${user2}) = true
+      AND (SELECT "user1Choice" FROM public."pendingRelationships" WHERE "user1Id" = ${user2} AND "user2Id" = ${user1}) = true
       THEN
 
       BEGIN
-        DELETE FROM pendingRelationships WHERE user1id = ${user1} AND user2id = ${user2};
-        DELETE FROM pendingRelationships WHERE user1id = ${user2} AND user1id = ${user2};
-        INSERT INTO friends (user1ID, user2ID) VALUES (${user1}, ${user2});
+        DELETE FROM public."pendingRelationships" WHERE "user1Id" = ${user1} AND "user2Id" = ${user2};
+        DELETE FROM public."pendingRelationships" WHERE "user1Id" = ${user2} AND "user2Id" = ${user1};
+        INSERT INTO friends ("user1ID", "user2ID", "date") VALUES (${user1}, ${user2}, to_timestamp(${date}));
       END;
 
     ELSE
       RAISE EXCEPTION 'not a match';
     END IF;
+    END
+    $$
   `)
   .then((results) => {
-    console.log('checking for match result:', results);
+    console.log('checking for match result:', results, true);
     return true;
   })
   .catch((err) => {
@@ -116,5 +127,10 @@ module.exports = {
   generateDiscoverFeed,
 };
 
-generateDiscoverFeed(7, "('10036', '10017', '10029')", 100);
-// testQuery();
+// generateDiscoverFeed(7, "('10036', '10017', '10029')", 100);
+// setRelationship(1, 7, true);
+// setRelationship(7, 1, true);
+// checkForMatchAndCreate(1, 7)
+//   .then((result) => {
+//     console.log(result);
+//   });
