@@ -3,6 +3,6 @@ const { getMatches } = require('./controllers/discover');
 
 const router = express.Router();
 
-router.get('/discover', getMatches);
+router.get('/api/discover', getMatches);
 
 module.exports = router;

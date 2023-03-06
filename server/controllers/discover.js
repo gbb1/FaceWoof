@@ -13,11 +13,14 @@ const getMatches = async (req, res) => {
       id, zipcode, radius, count,
     } = req.query;
     const { data } = await axios.get(`${url}/${apiKey}/radius.json/${zipcode}/${radius}/mile`);
-    const matchedZipcodes = data.reduce((acc, el, index) => {
-      acc += el.zip_code;
-      if (index === data.length - 1) { acc += ')'; }
+    const matchedZipcodes = data.zip_codes.reduce((acc, el, index) => {
+      acc += `'${el.zip_code}', `;
+      if (index === data.zip_codes.length - 1) {
+        acc = acc.slice(0, -2) + ')';
+      }
       return acc;
     }, '(');
+
     const nearbyUsers = await generateDiscoverFeed(id, matchedZipcodes, count);
     res.status(200).send(nearbyUsers);
   } catch (err) {
