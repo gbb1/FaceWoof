@@ -1,30 +1,14 @@
+/* eslint-disable react/no-array-index-key */
+/* eslint-disable react/prop-types */
 /* eslint-disable jsx-a11y/alt-text */
 import React, { useEffect, useState } from 'react';
 import './profileCard.css';
 
-export default function ProfileCard() {
-  const user = {
-    profile_photo: 'https://i.ibb.co/VCX4GWs/KOA-Nassau-2697x1517.jpg',
-    photos: [
-      'https://i.ibb.co/VCX4GWs/KOA-Nassau-2697x1517.jpg',
-      'https://i.ibb.co/k4rMVRK/dog-puppy-on-garden-royalty-free-image-1586966191.jpg',
-    ],
-    username: 'Buster',
-    age: '6 months',
-    breed: 'Golden Retriever',
-    vaccinated: true,
-    interests: [
-      'squirrels',
-      'bones',
-      'long walks',
-    ],
-    bio: 'If a dog chews shoes whose shoes does he choose?',
-  };
-
-  const distance = 5;
+export default function ProfileCard({ user, distance }) {
+  distance = distance || 5;
 
   return (
-    <div>
+    <div className="profile-card-parent">
       <div className="card w-96 bg-base-100 shadow-xl profileCard">
         <div className="card-header">
           <div className="card-header-title">
@@ -36,9 +20,15 @@ export default function ProfileCard() {
 
             <div className="profile-details">
               <div className="card-body-top">
-                <h2 className="card-title-text">
-                  {user.username}
-                </h2>
+                <div className="names-parent">
+                  <h2 className="card-title-text">
+                    {user.dogName}
+                  </h2>
+                  <div className="badge badge-secondary owner">
+                    {user.ownerName}
+                    &apos;s best friend
+                  </div>
+                </div>
                 <p className="profile-card-details">
                   {user.age}
                   {' '}
@@ -53,7 +43,7 @@ export default function ProfileCard() {
                   miles
                 </p>
                 {
-                  user.vaccinated
+                  user.vaccination
                     ? <div className="badge badge-secondary">&#10004; Vaccinated</div>
                     : null
                 }
@@ -63,18 +53,18 @@ export default function ProfileCard() {
           </div>
           <div className="card-actions justify-start">
             {
-              user.interests.map((interest) => (
-                <div className="badge badge-outline">{interest}</div>
+              user.interests.map((interest, index) => (
+                <div key={`interest${index}`} className="badge badge-outline">{interest}</div>
               ))
             }
           </div>
         </div>
         <div className="carousel-container">
-          <figure>
+          <figure className="figure-carousel">
             <div className="carousel w-full">
               {
                 user.photos.map((url, index) => (
-                  <div id={`item${index}`} className="carousel-item w-full">
+                  <div key={`photo${index}`} id={`item${user.userId}${index}`} className="carousel-item w-full">
                     <img className="w-full" src={url} alt="Doggy" />
                   </div>
                 ))
@@ -84,17 +74,13 @@ export default function ProfileCard() {
           <div className="flex justify-center w-full py-2 gap-2 carousel-buttons">
             {
                 user.photos.map((url, index) => (
-                  <a href={`#item${index}`} className="btn btn-xs">{index}</a>
+                  <a key={`button${index}`} href={`#item${user.userId}${index}`} className="btn btn-xs">{index}</a>
                 ))
             }
           </div>
         </div>
         <div className="card-body card-bottom">
-          {/* <h2 className="card-title">
-            About Buster:
-            <div className="badge badge-secondary">NEW</div>
-          </h2> */}
-          <p>{user.bio}</p>
+          <p className="card-p">{user.bio}</p>
         </div>
       </div>
     </div>

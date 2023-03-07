@@ -85,6 +85,23 @@ function setRelationship(user1, user2, choice) {
     });
 }
 
+function setRelationship2(user1, user2, choice) {
+  let date = new Date();
+  date = Math.floor(date.getTime() / 1000);
+
+  db.query(`
+    INSERT INTO public."pendingRelationships" ("user1Id", "user1Choice", "user2Id", "date")
+    VALUES (${user1}, ${choice}, ${user2}, to_timestamp(${date}));
+  `)
+    .then((result) => {
+      console.log('🚀 setRelationships query result:', result);
+      return result;
+    })
+    .catch((err) => {
+      console.log('Error setting relationships:', err);
+    });
+}
+
 /* DETECT IF MATCH, IF SO, CREATE FRIENDSHIP BETWEEN USER 1 AND USER 2 */
 function checkForMatchAndCreate(user1, user2) {
   let date = new Date();
@@ -93,19 +110,8 @@ function checkForMatchAndCreate(user1, user2) {
   return db.query(`
     do $$
     BEGIN
-    IF (SELECT "user1Choice" FROM public."pendingRelationships" WHERE "user1Id" = ${user1} AND "user2Id" = ${user2}) = true
-      AND (SELECT "user1Choice" FROM public."pendingRelationships" WHERE "user1Id" = ${user2} AND "user2Id" = ${user1}) = true
-      THEN
-
-      BEGIN
-        DELETE FROM public."pendingRelationships" WHERE "user1Id" = ${user1} AND "user2Id" = ${user2};
-        DELETE FROM public."pendingRelationships" WHERE "user1Id" = ${user2} AND "user2Id" = ${user1};
-        INSERT INTO friends ("user1ID", "user2ID", "date") VALUES (${user1}, ${user2}, to_timestamp(${date}));
-      END;
-
-    ELSE
-      RAISE EXCEPTION 'not a match';
-    END IF;
+      DELETE FROM public."pendingRelationships" WHERE "user1Id" = ${user2} AND "user2Id" = ${user1};
+      INSERT INTO friends ("user1ID", "user2ID", "date") VALUES (${user1}, ${user2}, to_timestamp(${date}));
     END
     $$
   `)
@@ -125,4 +131,8 @@ module.exports = {
   generateDiscoverFeed,
 };
 
-// generateDiscoverFeed(7, "('10036', '10017', '10029')", 100);
+// db.connect();
+// generateDiscoverFeed(7, "('10036', '10017', '10029')", 5)
+//   .then((results) => {
+//     console.log(results);
+//   });
