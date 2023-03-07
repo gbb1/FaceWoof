@@ -19,9 +19,8 @@ function testQuery() {
 }
 
 function generateDiscoverFeed(user1, zipcodes, count) {
-  // db.connect();
   return db.query(`
-  SELECT * FROM
+  SELECT users."userId", users."dogName", users."ownerName", users."dogBreed", users."age", users."vaccination", users."discoverable", users."ownerEmail", users."location", relationships."user1Choice" FROM
   (
     SELECT * FROM
       (

@@ -1,8 +1,10 @@
 const express = require('express');
-const { getMatches } = require('./controllers/discover');
+const { discoverUsers, userResponse } = require('./controllers');
 
 const router = express.Router();
 
-router.get('/discover', getMatches);
+router.get('/api/discover', discoverUsers);
+
+router.post('/api/response', userResponse);
 
 module.exports = router;
