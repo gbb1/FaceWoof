@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable no-shadow */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
@@ -10,7 +11,7 @@ import Match from './Match';
 import Blank from './Blank';
 import './cardStack.css';
 
-function CardStack() {
+function CardStack({ users }) {
   const exData = [
     {
       userId: 1,
@@ -128,25 +129,12 @@ function CardStack() {
   const [match, setMatch] = useState(false);
   const [matchOut, setMatchOut] = useState(false);
 
-  function getUsers(user) {
-    axios.get('/api/discover', {
-      params: {
-        id: 1,
-        zipcode: 10017,
-        radius: 5,
-        count: 1000,
-      },
-    })
-      .then((results) => {
-        setData(results);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }
-
   useEffect(() => {
-    getUsers();
+    // if (users === undefined) {
+    //   setData(exData);
+    // } else {
+    //   setData(users);
+    // }
   }, []);
 
   useEffect(() => {
