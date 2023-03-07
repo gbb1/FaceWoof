@@ -26,35 +26,35 @@ function generateDiscoverFeed(user1, zipcodes, count) {
     SELECT * FROM
       (
         SELECT * FROM public.users
-          WHERE users.location IN ('10036', '10017', '10029')
+          WHERE users.location IN ${zipcodes}
           AND user_id NOT IN
           (
             SELECT friends.user1_id FROM friends
-            WHERE friends.user2_id = 7
+            WHERE friends.user2_id = ${user1}
           )
         AND user_id NOT IN
           (
             SELECT friends.user2_id FROM friends
-            WHERE friends.user1_id = 7
+            WHERE friends.user1_id = ${user1}
           )
       ) users
       LEFT JOIN
         (
           SELECT * FROM pending_relationships
-          WHERE user2_id = 7
+          WHERE user2_id = ${user1}
           AND user1_choice = true
         ) AS relationships
       ON users.user_id = relationships.user1_id
       WHERE user_id NOT IN
         (
           SELECT a.user1_id FROM pending_relationships a
-          WHERE a.user2_id = 7
+          WHERE a.user2_id = ${user1}
           AND user1_choice = false
         )
       AND user_id NOT IN
         (
           SELECT a.user2_id FROM public.pending_relationships a
-          WHERE a.user1_id = 7
+          WHERE a.user1_id = ${user1}
           AND user1_choice = false
         )
     ) u
@@ -66,7 +66,7 @@ function generateDiscoverFeed(user1, zipcodes, count) {
       ) p
   ON u.user_id = p.user_id
   ORDER BY u.user1_choice
-  LIMIT 50;
+  LIMIT ${count};
   `)
   .then((results) => {
     console.log('Discover feed results', results.rows, results.rows.length);
