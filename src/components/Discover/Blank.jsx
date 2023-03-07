@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaDog } from 'react-icons/fa';
 
-import '../../views/discover.css';
+import './cardStack.css';
 
 export default function Blank() {
   return (
