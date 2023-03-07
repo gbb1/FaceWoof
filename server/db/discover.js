@@ -93,19 +93,8 @@ function checkForMatchAndCreate(user1, user2) {
   return db.query(`
     do $$
     BEGIN
-    IF (SELECT "user1Choice" FROM public."pendingRelationships" WHERE "user1Id" = ${user1} AND "user2Id" = ${user2}) = true
-      AND (SELECT "user1Choice" FROM public."pendingRelationships" WHERE "user1Id" = ${user2} AND "user2Id" = ${user1}) = true
-      THEN
-
-      BEGIN
-        DELETE FROM public."pendingRelationships" WHERE "user1Id" = ${user1} AND "user2Id" = ${user2};
-        DELETE FROM public."pendingRelationships" WHERE "user1Id" = ${user2} AND "user2Id" = ${user1};
-        INSERT INTO friends ("user1ID", "user2ID", "date") VALUES (${user1}, ${user2}, to_timestamp(${date}));
-      END;
-
-    ELSE
-      RAISE EXCEPTION 'not a match';
-    END IF;
+      DELETE FROM public."pendingRelationships" WHERE "user1Id" = ${user2} AND "user2Id" = ${user1};
+      INSERT INTO friends ("user1ID", "user2ID", "date") VALUES (${user1}, ${user2}, to_timestamp(${date}));
     END
     $$
   `)
