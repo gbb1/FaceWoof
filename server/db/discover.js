@@ -20,7 +20,7 @@ function testQuery() {
 
 function generateDiscoverFeed(user1, zipcodes, count) {
   return db.query(`
-  SELECT users."userId", users."dogName", users."ownerName", users."dogBreed", users."age", users."vaccination", users."discoverable", users."ownerEmail", users."location", relationships."user1Choice" FROM
+  SELECT u.user_id, u.dog_name, u.owner_name, u.dog_breed, u.age, u.vaccination, u.discoverable, u.owner_email, u.location, u.user1_choice, p.photos FROM
   (
     SELECT * FROM
       (
@@ -64,6 +64,7 @@ function generateDiscoverFeed(user1, zipcodes, count) {
         GROUP BY user_id
       ) p
   ON u.user_id = p.user_id
+  WHERE discoverable = true
   ORDER BY u.user1_choice
   LIMIT ${count};
   `)
@@ -78,23 +79,6 @@ function generateDiscoverFeed(user1, zipcodes, count) {
 
 /* SET A USER'S RESPONSE TO A DIFFERENT USER TO THEIR CHOICE */
 function setRelationship(user1, user2, choice) {
-  let date = new Date();
-  date = Math.floor(date.getTime() / 1000);
-
-  db.query(`
-    INSERT INTO pending_relationships ("user1_id", "user1_choice", "user2_id", "date")
-    VALUES (${user1}, ${choice}, ${user2}, to_timestamp(${date}));
-  `)
-    .then((result) => {
-      console.log('🚀 setRelationships query result:', result);
-      return result;
-    })
-    .catch((err) => {
-      console.log('Error setting relationships:', err);
-    });
-}
-
-function setRelationship2(user1, user2, choice) {
   let date = new Date();
   date = Math.floor(date.getTime() / 1000);
 
