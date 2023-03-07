@@ -7,7 +7,6 @@ const db = require('./database');
 /* GET X POTENTIAL MATCHES AND SERVE UP A SORTED LIST */
 /* OUT: array of users within set mile radius, ideally, first to appear are users who have already said yes to primary user */
 function testQuery() {
-  console.log('here');
   db.query(`
     SELECT * FROM users;
   `)
@@ -18,45 +17,56 @@ function testQuery() {
     console.log(err);
   });
 }
+
 function generateDiscoverFeed(user1, zipcodes, count) {
   // db.connect();
   return db.query(`
   SELECT * FROM
   (
-    SELECT * FROM users
-      WHERE users.location IN ${zipcodes}
-        AND "userId" NOT IN
-        (
-          SELECT friends."user1ID" FROM friends
-          WHERE friends."user2ID" = ${user1}
-        )
-        AND "userId" NOT IN
-        (
-          SELECT friends."user2ID" FROM friends
-          WHERE friends."user1ID" = ${user1}
-        )
-    ) users
-  LEFT JOIN
+    SELECT * FROM
       (
-      SELECT * FROM public."pendingRelationships"
-      WHERE "user2Id" = ${user1}
-        AND "user1Choice" = true
-      ) AS relationships
-      ON users."userId" = relationships."user1Id"
-  WHERE "userId" NOT IN
-    (
-      SELECT a."user1Id" FROM public."pendingRelationships" a
-      WHERE a."user2Id" = ${user1}
-        AND "user1Choice" = false
-    )
-    AND "userId" NOT IN
-    (
-      SELECT a."user2Id" FROM public."pendingRelationships" a
-      WHERE a."user1Id" = ${user1}
-        AND "user1Choice" = false
-    )
-  ORDER BY relationships."user1Choice"
-  LIMIT ${count};
+        SELECT * FROM public.users
+          WHERE users.location IN ('10036', '10017', '10029')
+          AND user_id NOT IN
+          (
+            SELECT friends.user1_id FROM friends
+            WHERE friends.user2_id = 7
+          )
+        AND user_id NOT IN
+          (
+            SELECT friends.user2_id FROM friends
+            WHERE friends.user1_id = 7
+          )
+      ) users
+      LEFT JOIN
+        (
+          SELECT * FROM pending_relationships
+          WHERE user2_id = 7
+          AND user1_choice = true
+        ) AS relationships
+      ON users.user_id = relationships.user1_id
+      WHERE user_id NOT IN
+        (
+          SELECT a.user1_id FROM pending_relationships a
+          WHERE a.user2_id = 7
+          AND user1_choice = false
+        )
+      AND user_id NOT IN
+        (
+          SELECT a.user2_id FROM public.pending_relationships a
+          WHERE a.user1_id = 7
+          AND user1_choice = false
+        )
+    ) u
+    LEFT JOIN
+      (
+        SELECT user_id, array_agg(url) as photos
+        FROM profile_photos
+        GROUP BY user_id
+      ) p
+  ON u.user_id = p.user_id
+  ORDER BY u.user1_choice
+  LIMIT 50;
   `)
   .then((results) => {
     console.log('Discover feed results', results.rows, results.rows.length);
@@ -73,7 +83,7 @@ function setRelationship(user1, user2, choice) {
   date = Math.floor(date.getTime() / 1000);
 
   db.query(`
-    INSERT INTO public."pendingRelationships" ("user1Id", "user1Choice", "user2Id", "date")
+    INSERT INTO pending_relationships ("user1_id", "user1_choice", "user2_id", "date")
     VALUES (${user1}, ${choice}, ${user2}, to_timestamp(${date}));
   `)
     .then((result) => {
@@ -90,7 +100,7 @@ function setRelationship2(user1, user2, choice) {
   date = Math.floor(date.getTime() / 1000);
 
   db.query(`
-    INSERT INTO public."pendingRelationships" ("user1Id", "user1Choice", "user2Id", "date")
+    INSERT INTO pending_relationships ("user1_id", "user1_choice", "user2_id", "date")
     VALUES (${user1}, ${choice}, ${user2}, to_timestamp(${date}));
   `)
     .then((result) => {
@@ -110,8 +120,8 @@ function checkForMatchAndCreate(user1, user2) {
   return db.query(`
     do $$
     BEGIN
-      DELETE FROM public."pendingRelationships" WHERE "user1Id" = ${user2} AND "user2Id" = ${user1};
-      INSERT INTO friends ("user1ID", "user2ID", "date") VALUES (${user1}, ${user2}, to_timestamp(${date}));
+      DELETE FROM pending_relationships WHERE "user1_id" = ${user2} AND "user2_id" = ${user1};
+      INSERT INTO friends ("user1_id", "user2_id", "date") VALUES (${user1}, ${user2}, to_timestamp(${date}));
     END
     $$
   `)
