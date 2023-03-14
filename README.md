@@ -1,6 +1,8 @@
-# FaceWoof
+<div align="center"> <img src="https://i.ibb.co/d6036Rf/Group-12.png" alt="Group-12" border="0" width="60%" /> </div>
 
+<div align="center"> A social media to help dog owners and their furry friends connect with others in their area. </div>
 
+## Setup
 1. Clone repo to your device
 2. cd into FaceWoof folder
 3. type "npm install" then press enter
